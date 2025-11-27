@@ -1,5 +1,5 @@
 // Carregar variables d'entorn (canviar la ruta en cas de trobarse en una altre ruta)
-require('dotenv').config({path: './config/.env'});
+require('dotenv').config();
 
 // Importar llibreries necessàries.
 const mongoose = require('mongoose');
