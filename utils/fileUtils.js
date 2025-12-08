@@ -4,7 +4,7 @@ const fs = require('fs').promises;
 
 class FileValidator {
     // Validar extensió d'arxiu
-    static validateExtension(fileName, allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif']) {
+    static validateExtension(fileName, allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp']) {
         const ext = path.extname(fileName).toLowerCase();
         return allowedExtensions.includes(ext);
     }
@@ -57,7 +57,7 @@ class FileValidator {
 
     // Validar mimetype segons tipus acceptats
     static validateMimeType(
-        mimeType, allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'] 
+        mimeType, allowedTypes = ['image/jpg','image/jpeg', 'image/png', 'image/webp'] 
     ) { return allowedTypes.includes(mimetype); }
 }
 

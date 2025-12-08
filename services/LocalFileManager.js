@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp'); // Per compressió i redimensionament
-const FileValidator = require("./utils/fileUtils.js");
+const FileValidator = require("../utils/fileUtils");
 
 // CloudManager serà passat com a opció si volem sincronitzar amb núvol.
 class LocalFileManager {
