@@ -1,0 +1,5 @@
+PORT=1234
+MONGO_URI=mongodb://localhost:27017/
+CLOUD_NAME=El_Teu_Cloud_Name
+API_KEY=La_Teva_API_KEY
+API_SECRET=El_Teu_API_SECRET

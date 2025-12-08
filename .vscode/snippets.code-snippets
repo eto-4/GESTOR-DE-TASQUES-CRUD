@@ -1,0 +1,40 @@
+{
+    "BT": {
+        "prefix": "BasT",
+        "body": [
+            ".then((${1:resultat}) => {${2:// codi a executar amb el resultat}})"
+        ],
+        "description": "Snippet per a .then bàsic (**Basic Then**)"
+    },
+    "CEC": {
+        "prefix": "CErrC",
+        "body": [
+            ".catch((${1:error}) => {",
+            "    console.error(${1:error});",
+            "})"
+        ],
+        "description": "Snippet per Catch bàsic amb console.error (**Console Error Catch**)"
+    },
+    "SC": {
+        "prefix": "StaC",
+        "body": [
+            ".catch((${1:error}) => {",
+            "    return res.status(${2:500}).json({",
+            "        error: '${3:missatge d'error}',",
+            "        detalls: ${4:error}",
+            "    });",
+            "});"
+        ],
+        "description": "Snippet per .catch de retorn JSON amb status i missatge detallat (**Status Catch**)"
+    },
+    "AT": {
+        "prefix": "ArwT",
+        "body": "(${1:v}) => {${2:enter}}",
+        "description": "Snippet per estructures amb fletxa més còmodes (**Arrow Template**)"
+    },
+    "SR": {
+        "prefix": "StaR",
+        "body": "return res.status(${1:500}).json({ error: '${2:Missatge d\'error}' });",
+        "description": "Snippet per estructures amb fletxa més còmodes (**Status Return**)"
+    }
+}

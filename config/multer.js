@@ -1,49 +1,21 @@
+// config/multer.js
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
-const { memo } = require('react');
 
-// Assegurar que el directori existeix
-const uploadDir = 'uploads/';
-if (!fs.existsSync(
-    // Directori esperat
-    uploadDir
-)) {
-    fs.mkdirSync(
-        uploadDir, 
-        { recursive: true }
-    );
-}
-
+// Emmagatzematge local
 const storage = multer.diskStorage({
-    destination: function(
-        // destination - Function Params
-        req, 
-        file,
-        cb
-    ) {
-        // Action
-        cb(null, uploadDir);
+    destination(req, file, cb) {
+        cb(null, 'uploads/');
     },
-    filename: function(
-        // filename - Function Params
-        req,
-        file,
-        cb
-    ){
-        // Action
-        // Generar nom unic: timeStamp + Nom original
-        const baseName = path.basename(file.originalname, extension);
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random()* 1E9);
-        const extension = path.extname(file.originalname);
-        cb(null, `${baseName}-${uniqueSuffix}${extension}`);
+    filename(req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = path.extname(file.originalname);
+        const base = path.basename(file.originalname, ext);
+        cb(null, `${base}-${uniqueSuffix}${ext}`);
     }
 });
 
-// Configuració per emmagatzematge en memòria (per núvol)
+// Emmagatzematge a memòria (per pujar al núvol)
 const memoryStorage = multer.memoryStorage();
 
-module.export = {
-    storage,
-    memoryStorage
-};
+module.exports = { storage, memoryStorage };
