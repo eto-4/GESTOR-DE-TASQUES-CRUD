@@ -1,3 +1,4 @@
+// services/CloudManager.js
 /**
  * CloudManager.js
  * Gestor d'operacions amb Cloudinary: pujada, esborrat i transformacions.
