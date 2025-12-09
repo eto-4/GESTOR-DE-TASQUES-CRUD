@@ -24,21 +24,30 @@ class LocalFileManager {
     // Guardar un arxiu
     saveFile(file, options = {}) {
         return new Promise((resolve, reject) => {
-            try {                
+            try {
+                
+                console.log(file);
+                
                 if (!FileValidator.validateExtension(file.originalname)) {
                     return reject(new Error('Extensió no permesa'));
                 }
                 
-                if (!FileValidator.validateSize(file.buffer.length)) {
+                if (!FileValidator.validateSize(file.size)) {
+                    console.log(file.size)
                     return reject(new Error('Arxiu massa gran'));
                 }
-                
-                const fileName = FileValidator.generateSafeFileName(file.originalname);
-                const filePath = path.join(this.uploadDir, fileName);
 
+                // Nom net
+                const fileName = FileValidator.generateSafeFileName(file.originalname);
+
+                // Fer servir destination si ve de multer, sino uploadDir per defecte.
+                const destDir = file.destination || this.uploadDir;
+                const filePath = path.join(destDir, fileName);
+
+                console.log(filePath);
 
                 // Guardar arxiu
-                fs.writeFile(filePath, file.buffer, (err) => {
+                fs.copyFile(file.path, filePath, (err) => {
                     if(err) return reject(err);
 
                     let promiseChain = Promise.resolve();
