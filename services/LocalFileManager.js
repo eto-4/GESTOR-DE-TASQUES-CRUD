@@ -26,14 +26,14 @@ class LocalFileManager {
         return new Promise((resolve, reject) => {
             try {
                 
-                console.log(file);
+                // console.log(file);
                 
                 if (!FileValidator.validateExtension(file.originalname)) {
                     return reject(new Error('Extensió no permesa'));
                 }
                 
                 if (!FileValidator.validateSize(file.size)) {
-                    console.log(file.size)
+                    // console.log(file.size)
                     return reject(new Error('Arxiu massa gran'));
                 }
 
@@ -44,7 +44,7 @@ class LocalFileManager {
                 const destDir = file.destination || this.uploadDir;
                 const filePath = path.join(destDir, fileName);
 
-                console.log(filePath);
+                // console.log(filePath);
 
                 // Guardar arxiu
                 fs.copyFile(file.path, filePath, (err) => {

@@ -11,10 +11,17 @@ const localManager = new LocalFileManager('uploads/');
  * @param {string} fieldName - nom del camp
  * @param {object} options - { local: boolean, cloud: boolean }
  */
-const uploadSingle = (fieldName, options = { local: true, cloud: false }) => {
+const uploadSingle = (fieldName, options = { local: false, cloud: false }) => {
     const uploader = multer({ storage }).single(fieldName);
 
     return (req, res, next) => {
+
+        if (!options.local && !options.cloud) {
+            return res.status(400).json({
+                error: 'No s\'ha seleccionat cap destinació per pujar el fitxer'
+            });
+        }
+
         uploader(req, res, (err) => {
             if (err) return res.status(400).json({ error: err.message });
             if (!req.file) return res.status(400).json({ error: 'No s\'ha pujat cap fitxer' });
@@ -51,10 +58,17 @@ const uploadSingle = (fieldName, options = { local: true, cloud: false }) => {
  * @param {number} maxCount - nombre màxim d'arxius
  * @param {object} options - { local: boolean, cloud: boolean }
  */
-const uploadMultiple = (fieldName, maxCount = 5, options = { local: true, cloud: false }) => {
+const uploadMultiple = (fieldName, maxCount = 5, options = { local: false, cloud: false }) => {
     const uploader = multer({ storage }).array(fieldName, maxCount);
 
     return (req, res, next) => {
+        
+        if (!options.local && !options.cloud) {
+            return res.status(400).json({
+                error: 'No s\'ha seleccionat cap destinació per pujar el fitxer'
+            });
+        }
+
         uploader(req, res, (err) => {
             if (err) return res.status(400).json({ error: err.message });
             if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'No s\'han pujat fitxers' });
