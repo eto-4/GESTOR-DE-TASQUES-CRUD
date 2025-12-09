@@ -7,18 +7,18 @@ const { parseSingle, parseMultiple } = require('../middleware/uploadParser');
 // LOCAL
 router.post('/local',
   parseSingle('file'),
-  (req, res, next) => UploadController.uploadSingle(req, res, next, { local: true })
+  (req, res, next) => UploadController.uploadSingle(req, res, next, { local: true, createThumbnail: true})
 );
 
 router.post('/local/multiple',
   parseMultiple('files', 10),
-  (req, res, next) => UploadController.uploadMultiple(req, res, next, { local: true })
+  (req, res, next) => UploadController.uploadMultiple(req, res, next, { local: true, createThumbnail: true })
 );
 
 // CLOUD
 router.post('/cloud',
   parseSingle('file'),
-  (req, res, next) => UploadController.uploadSingle(req, res, next, { cloud: true })
+  (req, res, next) => UploadController.uploadSingle(req, res, next, { local: false, cloud: true })
 );
 
 router.post('/cloud/multiple',

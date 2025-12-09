@@ -41,7 +41,9 @@ const TaskSchema = new mongoose.Schema({
     },
 
     image : {
-        type: String // URL
+        url: { type: String },
+        localName: { type: String },
+        cloudPublicId: { type: String }
     },
 
     priority : {

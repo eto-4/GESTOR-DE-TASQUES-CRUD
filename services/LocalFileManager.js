@@ -9,15 +9,11 @@ const FileValidator = require("../utils/fileUtils");
 class LocalFileManager {
     constructor( uploadDir = 'uploads/', cloudManager = null ) {
         this.uploadDir = uploadDir;
-        this.thumbDir = path.join(uploadDir, 'thumbs');
         this.cloudManager = cloudManager;
         
         // Assegurar quie els directoris existeixen
         if (!fs.existsSync(this.uploadDir)) {
             fs.mkdirSync(this.uploadDir, { recursive: true });
-        }
-        if (!fs.existsSync(this.thumbDir)) {
-            fs.mkdirSync(this.thumbDir, { recursive: true });
         }
     }
 
@@ -66,17 +62,19 @@ class LocalFileManager {
 
                     // Creació de thumbnail si s'indica
                     if (options.createThumbnail) {
-                        const thumbPath = path.join(this.thumbDir, fileName);
+                        const thumbDir = path.join(destDir, 'thumbs');
+                        
+                        if (!fs.existsSync(thumbDir)) {
+                            fs.mkdirSync(thumbDir, { recursive: true });
+                        }
+
+                        const thumbPath = path.join(thumbDir, fileName);
+
                         promiseChain = promiseChain
                             .then(() => sharp(filePath)
                                 .resize(150, 50)
                                 .toFile(thumbPath)
                             );
-                    }
-
-                    // Sincronització amb núvol si s'indica
-                    if ( options.syncCloud && this.cloudManager) {
-                        promiseChain = promiseChain.then(() => this.cloudManager.uploadFile(file));
                     }
 
                     promiseChain
