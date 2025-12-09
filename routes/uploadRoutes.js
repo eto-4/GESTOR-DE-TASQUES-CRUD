@@ -1,38 +1,40 @@
-// uploadRoutes.js
+// routes/uploadRoutes.js
 const express = require('express');
 const router = express.Router();
-
 const UploadController = require('../controllers/uploadController');
-
-// Middlewares de multer
-const uploadSingle = require('../middleware/upload').uploadSingle('file');
-const uploadMultiple = require('../middleware/upload').uploadMultiple('files', 10);
+const { parseSingle, parseMultiple } = require('../middleware/uploadParser');
 
 // LOCAL
-router.post('/local', uploadSingle, (req, res) => {
-    UploadController.uploadSingle(req, res, { local: true });
-});
+router.post('/local',
+  parseSingle('file'),
+  (req, res, next) => UploadController.uploadSingle(req, res, next, { local: true })
+);
 
-router.post('/local/multiple', uploadMultiple, (req, res) => {
-    UploadController.uploadMultiple(req, res, { local: true });
-});
+router.post('/local/multiple',
+  parseMultiple('files', 10),
+  (req, res, next) => UploadController.uploadMultiple(req, res, next, { local: true })
+);
 
-// CLOUDINARY
-router.post('/cloud', uploadSingle, (req, res) => {
-    UploadController.uploadSingle(req, res, { cloud: true });
-});
+// CLOUD
+router.post('/cloud',
+  parseSingle('file'),
+  (req, res, next) => UploadController.uploadSingle(req, res, next, { cloud: true })
+);
 
-router.post('/cloud/multiple', uploadMultiple, (req, res) => {
-    UploadController.uploadMultiple(req, res, { cloud: true });
-});
+router.post('/cloud/multiple',
+  parseMultiple('files', 10),
+  (req, res, next) => UploadController.uploadMultiple(req, res, next, { cloud: true })
+);
 
 // BOTH
-router.post('/both', uploadSingle, (req, res) => {
-    UploadController.uploadSingle(req, res, { local: true, cloud: true });
-});
+router.post('/both',
+  parseSingle('file'),
+  (req, res, next) => UploadController.uploadSingle(req, res, next, { local: true, cloud: true })
+);
 
-router.post('/both/multiple', uploadMultiple, (req, res) => {
-    UploadController.uploadMultiple(req, res, { local: true, cloud: true });
-});
+router.post('/both/multiple',
+  parseMultiple('files', 10),
+  (req, res, next) => UploadController.uploadMultiple(req, res, next, { local: true, cloud: true })
+);
 
 module.exports = router;
