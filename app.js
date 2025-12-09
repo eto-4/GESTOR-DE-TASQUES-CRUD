@@ -23,13 +23,12 @@ app.get('/', (req, res) => {
 const taskRoutes = require('./routes/taskRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 
-// Assignar rutes a paths específics
-app.use('/api/tasks', taskRoutes);
-app.use('/api/upload', uploadRoutes);
-
 // Servir fitxers estàtics de la carpeta uploads (per accés a imatges locals)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Assignar rutes a paths específics
+app.use('/api/tasks', taskRoutes);
+app.use('/api/upload', uploadRoutes);
 // Middleware global d'errors
 app.use((err, req, res, next) => {
   res.status(err.status || 400).json({

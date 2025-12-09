@@ -81,3 +81,14 @@ npm run dev
 | Obtenir tasca per ID     | GET    | /api/tasks/:id |
 | Actualitzar tasca        | PUT    | /api/tasks/:id |
 | Eliminar tasca           | DELETE | /api/tasks/:id |
+
+## 📁 Rutes de pujada d'arxius
+
+| Acció                                  | Mètode | Ruta                        |
+|----------------------------------------|--------|-----------------------------|
+| Pujar 1 fitxer (Local)                 |  POST  | /api/upload/local           |
+| Pujar múltiples fitxers (Local)        |  POST  | /api/upload/local/multiple  |
+| Pujar 1 fitxer (Cloudinary)            |  POST  | /api/upload/cloud           |
+| Pujar múltiples fitxers (Cloudinary)   |  POST  | /api/upload/cloud/multiple  |
+| Pujar 1 fitxer (Local + Cloud)         |  POST  | /api/upload/both            |
+| Pujar múltiples fitxers (Local + Cloud)|  POST  | /api/upload/both/multiple   |
