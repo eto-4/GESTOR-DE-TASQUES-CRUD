@@ -30,4 +30,11 @@ app.use('/api/upload', uploadRoutes);
 // Servir fitxers estàtics de la carpeta uploads (per accés a imatges locals)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Middleware global d'errors
+app.use((err, req, res, next) => {
+  res.status(err.status || 400).json({
+    error: err.message || 'Error desconegut'
+  });
+});
+
 module.exports = app;
