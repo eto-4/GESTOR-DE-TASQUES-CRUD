@@ -1,7 +1,6 @@
 // app.js
 
 const express = require('express');
-const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
 
@@ -11,8 +10,8 @@ const app = express();
 app.use(cors());
 
 // Parseig de JSON i dades codificades en URL (per formularis)
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Ruta de prova per comprovar que el servidor funciona
 app.get('/', (req, res) => {
