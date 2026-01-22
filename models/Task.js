@@ -5,6 +5,13 @@ const mongoose = require('mongoose');
 // Definim l'esquema del producte
 const TaskSchema = new mongoose.Schema({
 
+    user: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+        required: true,
+        index: true
+    },
+
     title : {
         type: String,
         required: true,
@@ -78,12 +85,22 @@ const TaskSchema = new mongoose.Schema({
 TaskSchema.pre('findOneAndUpdate', function(next) {
     const update = this.getUpdate();
 
-    // Actualitzar la data de l'última modificació
-    update.lastUpdate = Date.now();
+    if (!update.$set) {
+        update.$set = {};
+    }
 
-    // Si es marca com a completada i no té data de finalització, afegir-la
-    if (update.completed === true && !update.finished_at) {
-        update.finished_at = new Date();
+    // Sempre actualitzar updatedAt
+    update.$set.updatedAt = new Date();
+
+    if (update.$set.state === 'completed') {
+        update.$set.finished_at = new Date();
+    }
+
+    if (
+        update.$set.state &&
+        update.$set.state !== 'completed'
+    ) {
+        update.$set.finished_at = null;
     }
 
     next();
