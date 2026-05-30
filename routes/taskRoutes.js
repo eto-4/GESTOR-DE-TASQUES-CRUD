@@ -2,25 +2,16 @@
 const express = require('express');
 const router = express.Router();
 const taskController = require('../controllers/taskController');
+const auth = require('../middleware/auth');
 
-/**
- * Rutes principals per a la gestió de tasques.
- * Proporciona operacions CRUD: crear, llegir, actualitzar i eliminar tasques.
- */
+// router.use(auth) aplica el middleware a TOTES les rutes definides a continuació
+// Qualsevol petició sense token vàlid rebrà un 401 abans d'arribar al controlador
+router.use(auth);
 
-// Crear una nova tasca
-router.post('/', taskController.createTask);
-
-// Obtenir totes les tasques
-router.get('/', taskController.getTasks); 
-
-// Obtenir una tasca concreta per ID
-router.get('/:id', taskController.getTaskById);
-
-// Actualitzar una tasca per ID
-router.put('/:id', taskController.updateTask);
-
-// Eliminar una tasca per ID
+router.post('/',    taskController.createTask);
+router.get('/',     taskController.getTasks);
+router.get('/:id',  taskController.getTaskById);
+router.put('/:id',  taskController.updateTask);
 router.delete('/:id', taskController.deleteTask);
 
 module.exports = router;

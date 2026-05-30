@@ -1,38 +1,42 @@
 // app.js
-
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
 
 const app = express();
 
-// Habilitar CORS per permetre peticions des de qualsevol origen
+// Middleware globals
 app.use(cors());
-
-// Parseig de JSON i dades codificades en URL (per formularis)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Ruta de prova per comprovar que el servidor funciona
+// Servir fitxers estàtics de la carpeta uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Ruta de prova
 app.get('/', (req, res) => {
-    res.send({ message: 'Gestor de tasques en funcionament!' });
+    res.json({ message: 'Gestor de tasques en funcionament!' });
 });
 
 // Importar rutes
-const taskRoutes = require('./routes/taskRoutes');
+const authRoutes   = require('./routes/authRoutes');
+const taskRoutes   = require('./routes/taskRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const adminRoutes  = require('./routes/adminRoutes');
 
-// Servir fitxers estàtics de la carpeta uploads (per accés a imatges locals)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Assignar rutes a paths específics
-app.use('/api/tasks', taskRoutes);
+// Assignar rutes
+// Ordre: públiques primer, protegides després
+app.use('/api/auth',   authRoutes);
+app.use('/api/tasks',  taskRoutes);
 app.use('/api/upload', uploadRoutes);
-// Middleware global d'errors
+app.use('/api/admin',  adminRoutes);
+
+// Middleware global d'errors (sempre al final)
 app.use((err, req, res, next) => {
-  res.status(err.status || 400).json({
-    error: err.message || 'Error desconegut'
-  });
+    res.status(err.statusCode || err.status || 500).json({
+        success: false,
+        error: err.message || 'Error desconegut'
+    });
 });
 
 module.exports = app;
