@@ -1,18 +1,16 @@
 // controllers/authController.js
 const User = require('../models/User');
+const Role = require('../models/Role');
 const generateToken = require('../utils/generateToken');
 const { handleValidationErrors } = require('../middleware/validators/authValidators');
 
 // POST /api/auth/register
-// Registra un nou usuari i retorna un JWT
 exports.register = async (req, res) => {
-    // 1. Comprovar errors de validació (email, password, name)
     if (handleValidationErrors(req, res)) return;
 
     try {
         const { name, email, password } = req.body;
 
-        // 2. Comprovar si l'email ja existeix
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({
@@ -21,13 +19,20 @@ exports.register = async (req, res) => {
             });
         }
 
-        // 3. Crear l'usuari (el hook pre-save xifra la contrasenya automàticament)
-        const user = await User.create({ name, email, password });
+        // Buscar el rol "user" per defecte i assignar-lo automàticament
+        const defaultRole = await Role.findOne({ name: 'user' });
 
-        // 4. Generar JWT amb id, email i rol
-        const token = generateToken(user._id, user.email, user.role);
+        const user = await User.create({
+            name,
+            email,
+            password,
+            roles: defaultRole ? [defaultRole._id] : []
+        });
 
-        // 5. Retornar token i dades de l'usuari (toJSON elimina la contrasenya)
+        await user.populate('roles', 'name');
+
+        const token = generateToken(user._id, user.email, 'user');
+
         res.status(201).json({
             success: true,
             message: 'Usuari registrat correctament',
@@ -37,7 +42,7 @@ exports.register = async (req, res) => {
                     id: user._id,
                     name: user.name,
                     email: user.email,
-                    role: user.role,
+                    roles: user.roles.map(r => r.name),
                     createdAt: user.createdAt
                 }
             }
@@ -52,15 +57,19 @@ exports.register = async (req, res) => {
 };
 
 // POST /api/auth/login
-// Inicia sessió i retorna un JWT
 exports.login = async (req, res) => {
     if (handleValidationErrors(req, res)) return;
 
     try {
         const { email, password } = req.body;
 
-        // Buscar l'usuari per email (incloem password perquè té select:false)
-        const user = await User.findOne({ email }).select('+password');
+        const user = await User.findOne({ email })
+            .select('+password')
+            .populate({
+                path: 'roles',
+                populate: { path: 'permissions' }
+            });
+
         if (!user) {
             return res.status(401).json({
                 success: false,
@@ -68,7 +77,6 @@ exports.login = async (req, res) => {
             });
         }
 
-        // Comparar la contrasenya amb bcrypt
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
             return res.status(401).json({
@@ -77,7 +85,8 @@ exports.login = async (req, res) => {
             });
         }
 
-        const token = generateToken(user._id, user.email, user.role);
+        const token = generateToken(user._id, user.email, user.roles.map(r => r.name));
+        const permissions = user.getEffectivePermissions();
 
         res.status(200).json({
             success: true,
@@ -88,7 +97,8 @@ exports.login = async (req, res) => {
                     id: user._id,
                     name: user.name,
                     email: user.email,
-                    role: user.role
+                    roles: user.roles.map(r => r.name),
+                    permissions
                 }
             }
         });
@@ -101,30 +111,44 @@ exports.login = async (req, res) => {
     }
 };
 
-// GET /api/auth/me  (ruta protegida)
-// Retorna les dades de l'usuari autenticat (req.user el posa el middleware auth)
+// GET /api/auth/me
 exports.getMe = async (req, res) => {
-    res.status(200).json({
-        success: true,
-        data: {
-            id: req.user._id,
-            name: req.user.name,
-            email: req.user.email,
-            role: req.user.role,
-            createdAt: req.user.createdAt
-        }
-    });
+    try {
+        const user = await User.findById(req.user._id)
+            .populate({
+                path: 'roles',
+                populate: { path: 'permissions' }
+            });
+
+        const permissions = user.getEffectivePermissions();
+
+        res.status(200).json({
+            success: true,
+            data: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                roles: user.roles.map(r => r.name),
+                permissions,
+                createdAt: user.createdAt
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Error obtenint el perfil',
+            details: error.message
+        });
+    }
 };
 
-// PUT /api/auth/profile  (ruta protegida)
-// Actualitza el nom i/o email de l'usuari autenticat
+// PUT /api/auth/profile
 exports.updateProfile = async (req, res) => {
     if (handleValidationErrors(req, res)) return;
 
     try {
         const { name, email } = req.body;
 
-        // Si canvia l'email, comprovar que no el tingui un altre usuari
         if (email && email !== req.user.email) {
             const emailInUse = await User.findOne({ email, _id: { $ne: req.user._id } });
             if (emailInUse) {
@@ -135,12 +159,11 @@ exports.updateProfile = async (req, res) => {
             }
         }
 
-        // Actualitzar dades (no permetem canviar el rol des d'aquí)
         const updatedUser = await User.findByIdAndUpdate(
             req.user._id,
             { name, email },
             { new: true, runValidators: true }
-        );
+        ).populate('roles', 'name');
 
         res.status(200).json({
             success: true,
@@ -149,7 +172,7 @@ exports.updateProfile = async (req, res) => {
                 id: updatedUser._id,
                 name: updatedUser.name,
                 email: updatedUser.email,
-                role: updatedUser.role,
+                roles: updatedUser.roles.map(r => r.name),
                 createdAt: updatedUser.createdAt
             }
         });
@@ -162,18 +185,15 @@ exports.updateProfile = async (req, res) => {
     }
 };
 
-// PUT /api/auth/change-password  (ruta protegida)
-// Canvia la contrasenya de l'usuari autenticat
+// PUT /api/auth/change-password
 exports.changePassword = async (req, res) => {
     if (handleValidationErrors(req, res)) return;
 
     try {
         const { currentPassword, newPassword } = req.body;
 
-        // Obtenir l'usuari amb la contrasenya (select:false per defecte no la retorna)
         const user = await User.findById(req.user._id).select('+password');
 
-        // Verificar la contrasenya actual
         const isMatch = await user.comparePassword(currentPassword);
         if (!isMatch) {
             return res.status(400).json({
@@ -182,7 +202,6 @@ exports.changePassword = async (req, res) => {
             });
         }
 
-        // Assignar nova contrasenya (el hook pre-save la xifrarà automàticament)
         user.password = newPassword;
         await user.save();
 
@@ -194,6 +213,45 @@ exports.changePassword = async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Error al canviar la contrasenya',
+            details: error.message
+        });
+    }
+};
+
+// POST /api/auth/check-permission
+// Verifica si l'usuari autenticat té un permís específic
+exports.checkPermission = async (req, res) => {
+    try {
+        const { permission } = req.body;
+
+        if (!permission) {
+            return res.status(400).json({
+                success: false,
+                error: 'Cal especificar un permís'
+            });
+        }
+
+        // Carregar l'usuari amb els seus rols i permisos populats
+        const user = await User.findById(req.user._id)
+            .populate({
+                path: 'roles',
+                populate: { path: 'permissions' }
+            });
+
+        const userPermissions = user.getEffectivePermissions();
+        const hasPermission = userPermissions.includes(permission);
+
+        res.status(200).json({
+            success: true,
+            hasPermission,
+            message: hasPermission
+                ? 'Tens permís per fer aquesta acció'
+                : 'No tens permís per fer aquesta acció'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Error verificant el permís',
             details: error.message
         });
     }

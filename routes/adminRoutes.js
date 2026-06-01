@@ -3,14 +3,17 @@ const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
 const auth = require('../middleware/auth');
-const roleCheck = require('../middleware/roleCheck');
+const checkPermission = require('../middleware/checkPermission');
 
-// Totes les rutes d'admin requereixen:
-// 1. auth       → token JWT vàlid
-// 2. roleCheck  → rol "admin"
-router.get('/users',              auth, roleCheck(['admin']), adminController.getAllUsers);
-router.get('/tasks',              auth, roleCheck(['admin']), adminController.getAllTasks);
-router.delete('/users/:id',       auth, roleCheck(['admin']), adminController.deleteUser);
-router.put('/users/:id/role',     auth, roleCheck(['admin']), adminController.changeUserRole);
+// Gestió d'usuaris
+router.get('/users',                        auth, checkPermission('users:read'),   adminController.getAllUsers);
+router.get('/tasks',                        auth, checkPermission('users:read'),   adminController.getAllTasks);
+router.delete('/users/:id',                 auth, checkPermission('users:manage'), adminController.deleteUser);
+router.put('/users/:id/role',               auth, checkPermission('users:manage'), adminController.changeUserRole);
+
+// Assignació de rols a usuaris
+router.post('/users/:userId/roles',         auth, checkPermission('users:manage'), adminController.assignRoleToUser);
+router.delete('/users/:userId/roles/:roleId', auth, checkPermission('users:manage'), adminController.removeRoleFromUser);
+router.get('/users/:userId/permissions',    auth, checkPermission('users:read'),   adminController.getUserPermissions);
 
 module.exports = router;

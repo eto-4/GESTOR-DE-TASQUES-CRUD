@@ -19,4 +19,7 @@ router.get('/me',                auth,                                      auth
 router.put('/profile',           auth, ...updateProfileValidation,          authController.updateProfile);
 router.put('/change-password',   auth, ...changePasswordValidation,         authController.changePassword);
 
+//
+router.post('/check-permission', auth, authController.checkPermission);
+
 module.exports = router;

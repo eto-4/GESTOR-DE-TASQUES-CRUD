@@ -1,14 +1,15 @@
 // controllers/adminController.js
 const User = require('../models/User');
 const Task = require('../models/Task');
+const Role = require('../models/Role');
 
 // GET /api/admin/users
-// Retorna tots els usuaris del sistema (sense contrasenyes)
 exports.getAllUsers = async (req, res) => {
     try {
-        // toJSON del model ja elimina la contrasenya, però select('-password')
-        // és una capa extra de seguretat
-        const users = await User.find().select('-password').sort({ createdAt: -1 });
+        const users = await User.find()
+            .select('-password')
+            .populate('roles', 'name description')
+            .sort({ createdAt: -1 });
 
         res.status(200).json({
             success: true,
@@ -17,7 +18,7 @@ exports.getAllUsers = async (req, res) => {
                 id: u._id,
                 name: u.name,
                 email: u.email,
-                role: u.role,
+                roles: u.roles,
                 createdAt: u.createdAt
             }))
         });
@@ -31,13 +32,10 @@ exports.getAllUsers = async (req, res) => {
 };
 
 // GET /api/admin/tasks
-// Retorna totes les tasques del sistema amb les dades del propietari
 exports.getAllTasks = async (req, res) => {
     try {
-        // populate('user') substitueix l'ObjectId pel document d'usuari
-        // select limita quins camps de l'usuari s'inclouen
         const tasks = await Task.find()
-            .populate('user', 'name email role')
+            .populate('user', 'name email')
             .sort({ createdAt: -1 });
 
         res.status(200).json({
@@ -55,10 +53,8 @@ exports.getAllTasks = async (req, res) => {
 };
 
 // DELETE /api/admin/users/:id
-// Elimina un usuari i totes les seves tasques
 exports.deleteUser = async (req, res) => {
     try {
-        // Un admin no es pot eliminar a si mateix
         if (req.params.id === req.user._id.toString()) {
             return res.status(400).json({
                 success: false,
@@ -74,10 +70,7 @@ exports.deleteUser = async (req, res) => {
             });
         }
 
-        // Eliminar primer totes les tasques de l'usuari
         await Task.deleteMany({ user: req.params.id });
-
-        // Eliminar l'usuari
         await User.findByIdAndDelete(req.params.id);
 
         res.status(200).json({
@@ -94,12 +87,11 @@ exports.deleteUser = async (req, res) => {
 };
 
 // PUT /api/admin/users/:id/role
-// Canvia el rol d'un usuari (user <-> admin)
+// Manteniment de compatibilitat amb T7 — canvia rol per nom
 exports.changeUserRole = async (req, res) => {
     try {
         const { role } = req.body;
 
-        // Validar que el rol sigui vàlid
         if (!['user', 'admin'].includes(role)) {
             return res.status(400).json({
                 success: false,
@@ -107,7 +99,6 @@ exports.changeUserRole = async (req, res) => {
             });
         }
 
-        // Un admin no es pot canviar el rol a si mateix
         if (req.params.id === req.user._id.toString()) {
             return res.status(400).json({
                 success: false,
@@ -115,11 +106,20 @@ exports.changeUserRole = async (req, res) => {
             });
         }
 
+        // Buscar el rol per nom i assignar-lo a l'usuari
+        const roleDoc = await Role.findOne({ name: role });
+        if (!roleDoc) {
+            return res.status(404).json({
+                success: false,
+                error: 'Rol no trobat a la base de dades'
+            });
+        }
+
         const user = await User.findByIdAndUpdate(
             req.params.id,
-            { role },
+            { roles: [roleDoc._id] },
             { new: true }
-        ).select('-password');
+        ).select('-password').populate('roles', 'name');
 
         if (!user) {
             return res.status(404).json({
@@ -135,13 +135,124 @@ exports.changeUserRole = async (req, res) => {
                 id: user._id,
                 name: user.name,
                 email: user.email,
-                role: user.role
+                roles: user.roles
             }
         });
     } catch (error) {
         res.status(500).json({
             success: false,
             error: 'Error canviant el rol',
+            details: error.message
+        });
+    }
+};
+
+// POST /api/admin/users/:userId/roles
+exports.assignRoleToUser = async (req, res) => {
+    try {
+        const { roleId } = req.body;
+
+        const role = await Role.findById(roleId);
+        if (!role) {
+            return res.status(404).json({
+                success: false,
+                error: 'El rol no existeix'
+            });
+        }
+
+        const user = await User.findById(req.params.userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'Usuari no trobat'
+            });
+        }
+
+        await user.addRole(roleId);
+        await user.populate('roles', 'name description permissions');
+
+        res.status(200).json({
+            success: true,
+            message: 'Rol assignat correctament',
+            data: {
+                userId: user._id,
+                roles: user.roles
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Error assignant el rol',
+            details: error.message
+        });
+    }
+};
+
+// DELETE /api/admin/users/:userId/roles/:roleId
+exports.removeRoleFromUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.userId).populate('roles');
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'Usuari no trobat'
+            });
+        }
+
+        // No permetre que l'usuari quedi sense cap rol
+        if (user.roles.length <= 1) {
+            return res.status(400).json({
+                success: false,
+                error: 'L\'usuari ha de tenir almenys un rol'
+            });
+        }
+
+        await user.removeRole(req.params.roleId);
+
+        res.status(200).json({
+            success: true,
+            message: 'Rol eliminat correctament'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Error eliminant el rol',
+            details: error.message
+        });
+    }
+};
+
+// GET /api/admin/users/:userId/permissions
+exports.getUserPermissions = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.userId)
+            .populate({
+                path: 'roles',
+                populate: { path: 'permissions' }
+            });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'Usuari no trobat'
+            });
+        }
+
+        const permissions = user.getEffectivePermissions();
+
+        res.status(200).json({
+            success: true,
+            data: {
+                userId: user._id,
+                name: user.name,
+                roles: user.roles.map(r => r.name),
+                permissions
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Error obtenint els permisos',
             details: error.message
         });
     }

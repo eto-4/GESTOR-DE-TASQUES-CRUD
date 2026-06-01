@@ -3,15 +3,14 @@ const express = require('express');
 const router = express.Router();
 const taskController = require('../controllers/taskController');
 const auth = require('../middleware/auth');
+const checkPermission = require('../middleware/checkPermission');
 
-// router.use(auth) aplica el middleware a TOTES les rutes definides a continuació
-// Qualsevol petició sense token vàlid rebrà un 401 abans d'arribar al controlador
 router.use(auth);
 
-router.post('/',    taskController.createTask);
-router.get('/',     taskController.getTasks);
-router.get('/:id',  taskController.getTaskById);
-router.put('/:id',  taskController.updateTask);
-router.delete('/:id', taskController.deleteTask);
+router.get('/',     checkPermission('tasks:read'),   taskController.getTasks);
+router.post('/',    checkPermission('tasks:create'),  taskController.createTask);
+router.get('/:id',  checkPermission('tasks:read'),   taskController.getTaskById);
+router.put('/:id',  checkPermission('tasks:update'),  taskController.updateTask);
+router.delete('/:id', checkPermission('tasks:delete'), taskController.deleteTask);
 
 module.exports = router;

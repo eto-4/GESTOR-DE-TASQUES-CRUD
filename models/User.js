@@ -14,21 +14,20 @@ const userSchema = new mongoose.Schema({
         unique: true,
         trim: true,
         lowercase: true,
-        // Fix: faltava el domini entre @ i .
         match: [/^\S+@\S+\.\S+$/, 'Si us plau, introdueix un email vàlid.']
     },
     password: {
         type: String,
         required: [true, 'La contrasenya és obligatoria.'],
         minlength: [6, 'La contrasenya ha de tenir mínim 6 caràcters'],
-        select: false // No s'inclourà a les consultes per defecte
+        select: false
     },
-    role: {
-        type: String,
-        enum: ['user', 'admin'],
-        default: 'user'
-    }
-}, { timestamps: true }); // Crea automàticament createdAt i updatedAt
+    // Array de referències a rols (un usuari pot tenir múltiples rols)
+    roles: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Role'
+    }]
+}, { timestamps: true });
 
 // Hook pre-save: xifra la contrasenya només si ha estat modificada
 userSchema.pre('save', async function(next) {
@@ -42,16 +41,52 @@ userSchema.pre('save', async function(next) {
     }
 });
 
-// Mètode per comparar la contrasenya introduïda amb la xifrada
+// Compara la contrasenya introduïda amb la xifrada
 userSchema.methods.comparePassword = async function(candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Mètode toJSON: elimina la contrasenya de les respostes automàticament
+// Elimina la contrasenya de les respostes JSON automàticament
 userSchema.methods.toJSON = function() {
     const user = this.toObject();
     delete user.password;
     return user;
+};
+
+// Afegeix un rol a l'usuari si no el té ja
+userSchema.methods.addRole = function(roleId) {
+    if (!this.roles.includes(roleId)) {
+        this.roles.push(roleId);
+    }
+    return this.save();
+};
+
+// Elimina un rol de l'usuari
+userSchema.methods.removeRole = function(roleId) {
+    this.roles = this.roles.filter(
+        r => r.toString() !== roleId.toString()
+    );
+    return this.save();
+};
+
+// Retorna tots els permisos efectius combinant tots els rols
+// Requereix que roles estigui poblat amb populate('roles')
+// i que els permisos de cada rol estiguin poblats amb populate('roles.permissions')
+userSchema.methods.getEffectivePermissions = function() {
+    const permissions = new Set();
+    this.roles.forEach(role => {
+        if (role.permissions) {
+            role.permissions.forEach(permission => {
+                permissions.add(permission.name);
+            });
+        }
+    });
+    return Array.from(permissions);
+};
+
+// Verifica si l'usuari té un permís específic
+userSchema.methods.hasPermission = function(permissionName) {
+    return this.getEffectivePermissions().includes(permissionName);
 };
 
 module.exports = mongoose.model('User', userSchema);
