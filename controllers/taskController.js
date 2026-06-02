@@ -29,6 +29,14 @@ exports.getTasks = (req, res) => {
 //      Comprova que pertany a l'usuari
 // ---------------------------------
 exports.getTaskById = (req, res) => {
+    // Comprovar que el format de l'id sigui correcte
+    if (!isValidObjectId(req.params.id)) {
+        return res.status(400).json({
+            success: false,
+            error: 'Format d\'ID invàlid'
+        });
+    }
+
     // Busquem per _id I per user alhora: si la tasca no és de l'usuari, retorna null
     Task.findOne({ _id: req.params.id, user: req.user._id })
         .then(task => {
@@ -86,6 +94,14 @@ exports.createTask = (req, res) => {
 //    Comprova que pertany a l'usuari abans d'actualitzar
 // ---------------------------------
 exports.updateTask = (req, res) => {
+    // Comprovar que el format de l'id sigui correcte
+    if (!isValidObjectId(req.params.id)) {
+        return res.status(400).json({
+            success: false,
+            error: 'Format d\'ID invàlid'
+        });
+    }
+
     // findOneAndUpdate amb filtre user: garanteix que només actualitza
     // la tasca si pertany a l'usuari autenticat
     Task.findOneAndUpdate(
@@ -119,6 +135,14 @@ exports.updateTask = (req, res) => {
 //    Comprova que pertany a l'usuari abans d'eliminar
 // ---------------------------------
 exports.deleteTask = (req, res) => {
+    // Comprovar format de l'id
+    if (!isValidObjectId(req.params.id)) {
+        return res.status(400).json({
+            success: false,
+            error: 'Format d\'ID invàlid'
+        });
+    }
+
     Task.findOneAndDelete({ _id: req.params.id, user: req.user._id })
         .then(deletedTask => {
             if (!deletedTask) {

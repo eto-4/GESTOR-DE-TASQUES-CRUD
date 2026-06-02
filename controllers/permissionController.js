@@ -90,6 +90,14 @@ exports.getPermissionsByCategory = async (req, res) => {
 // PUT /api/admin/permissions/:id
 exports.updatePermission = async (req, res) => {
     try {
+
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Format d\'ID invàlid'
+            });
+        }
+
         const permission = await Permission.findById(req.params.id);
         if (!permission) {
             return res.status(404).json({
@@ -129,6 +137,14 @@ exports.updatePermission = async (req, res) => {
 // DELETE /api/admin/permissions/:id
 exports.deletePermission = async (req, res) => {
     try {
+
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Format d\'ID invàlid'
+            });
+        }
+
         const permission = await Permission.findById(req.params.id);
         if (!permission) {
             return res.status(404).json({

@@ -58,6 +58,14 @@ exports.getAuditLogs = async (req, res) => {
 // GET /api/admin/audit-logs/:id
 exports.getAuditLogById = async (req, res) => {
     try {
+        
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Format d\'ID invàlid'
+            });
+        }
+
         const log = await AuditLog.findById(req.params.id)
             .populate('userId', 'name email');
 
@@ -84,6 +92,12 @@ exports.getAuditLogById = async (req, res) => {
 // GET /api/admin/audit-logs/user/:userId
 exports.getUserAuditLogs = async (req, res) => {
     try {
+        if (!isValidObjectId(req.params.userId)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Format d\'ID invàlid'
+            });
+        }
         const logs = await AuditLog.find({ userId: req.params.userId })
             .populate('userId', 'name email')
             .sort({ timestamp: -1 })

@@ -2,6 +2,7 @@
 const User = require('../models/User');
 const Task = require('../models/Task');
 const Role = require('../models/Role');
+const { isValidObjectId } = require('mongoose');
 
 // GET /api/admin/users
 exports.getAllUsers = async (req, res) => {
@@ -55,6 +56,14 @@ exports.getAllTasks = async (req, res) => {
 // DELETE /api/admin/users/:id
 exports.deleteUser = async (req, res) => {
     try {
+
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Format d\'ID invàlid'
+            });
+        }
+
         if (req.params.id === req.user._id.toString()) {
             return res.status(400).json({
                 success: false,
@@ -96,6 +105,13 @@ exports.changeUserRole = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 error: 'Rol no vàlid. Ha de ser "user" o "admin"'
+            });
+        }
+        
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Format d\'ID invàlid'
             });
         }
 
@@ -152,6 +168,13 @@ exports.assignRoleToUser = async (req, res) => {
     try {
         const { roleId } = req.body;
 
+        if (!isValidObjectId(req.params.roleId) || !isValidObjectId(req.params.userId)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Format d\'ID invàlid'
+            });
+        }
+
         const role = await Role.findById(roleId);
         if (!role) {
             return res.status(404).json({
@@ -191,6 +214,14 @@ exports.assignRoleToUser = async (req, res) => {
 // DELETE /api/admin/users/:userId/roles/:roleId
 exports.removeRoleFromUser = async (req, res) => {
     try {
+
+        if (!isValidObjectId(req.params.userId) || !isValidObjectId(req.params.roleId)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Format d\'ID invàlid'
+            });
+        }
+
         const user = await User.findById(req.params.userId).populate('roles');
         if (!user) {
             return res.status(404).json({
@@ -225,6 +256,14 @@ exports.removeRoleFromUser = async (req, res) => {
 // GET /api/admin/users/:userId/permissions
 exports.getUserPermissions = async (req, res) => {
     try {
+        
+        if (!isValidObjectId(req.params.userId)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Format d\'ID invàlid'
+            });
+        }
+
         const user = await User.findById(req.params.userId)
             .populate({
                 path: 'roles',

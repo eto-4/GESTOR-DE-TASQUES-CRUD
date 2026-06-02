@@ -78,6 +78,14 @@ exports.getAllRoles = async (req, res) => {
 // GET /api/admin/roles/:id
 exports.getRoleById = async (req, res) => {
     try {
+
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Format d\'ID invàlid'
+            });
+        }
+
         const role = await Role.findById(req.params.id).populate('permissions');
         if (!role) {
             return res.status(404).json({
@@ -102,6 +110,14 @@ exports.getRoleById = async (req, res) => {
 // PUT /api/admin/roles/:id
 exports.updateRole = async (req, res) => {
     try {
+
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Format d\'ID invàlid'
+            });
+        }
+
         const role = await Role.findById(req.params.id);
         if (!role) {
             return res.status(404).json({
@@ -154,6 +170,14 @@ exports.updateRole = async (req, res) => {
 // DELETE /api/admin/roles/:id
 exports.deleteRole = async (req, res) => {
     try {
+
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Format d\'ID invàlid'
+            });
+        }
+
         const role = await Role.findById(req.params.id);
         if (!role) {
             return res.status(404).json({
@@ -197,6 +221,12 @@ exports.deleteRole = async (req, res) => {
 // POST /api/admin/roles/:id/permissions
 exports.addPermissionToRole = async (req, res) => {
     try {
+        if (!isValidObjectId(req.params.id) || !isValidObjectId(req.params.permissionId)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Format d\'ID invàlid'
+            });
+        }
         const role = await Role.findById(req.params.id);
         if (!role) {
             return res.status(404).json({
@@ -233,6 +263,14 @@ exports.addPermissionToRole = async (req, res) => {
 // DELETE /api/admin/roles/:id/permissions/:permissionId
 exports.removePermissionFromRole = async (req, res) => {
     try {
+        
+        if (!isValidObjectId(req.params.id) || !isValidObjectId(req.params.permissionId)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Format d\'ID invàlid'
+            });
+        }
+
         const role = await Role.findById(req.params.id);
         if (!role) {
             return res.status(404).json({
