@@ -231,6 +231,15 @@ exports.checkPermission = async (req, res) => {
             });
         }
 
+        const permissionExists = await Permission.findOne({ name: permission });
+        if (!permissionExists) {
+            return res.status(400).json({
+                success: false,
+                hasPermission: false,
+                message: 'El permís especificat no existeix al sistema'
+            });
+        }
+
         // Carregar l'usuari amb els seus rols i permisos populats
         const user = await User.findById(req.user._id)
             .populate({
@@ -240,7 +249,6 @@ exports.checkPermission = async (req, res) => {
 
         const userPermissions = user.getEffectivePermissions();
         const hasPermission = userPermissions.includes(permission);
-
         res.status(200).json({
             success: true,
             hasPermission,
