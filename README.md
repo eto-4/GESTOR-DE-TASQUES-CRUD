@@ -73,6 +73,27 @@ task-manager-api/
 
 ---
 
+## ✅ Estat d'Implementació
+
+| Funcionalitat | T7 | T8 |
+|---|---|---|
+| 🔐 Registre i login amb JWT | ✅ | ✅ |
+| 🔑 Middleware d'autenticació | ✅ | ✅ |
+| 👤 Gestió de perfil d'usuari | ✅ | ✅ |
+| 🛡️ Protecció de rutes de tasques | ✅ | ✅ |
+| 👑 Rols simples (user/admin) | ✅ | — |
+| 🎨 Sistema de rols dinàmics | — | ✅ |
+| 🔐 Permisos granulars | — | ✅ |
+| 🌱 Rols i permisos per defecte | — | ✅ |
+| 👥 Assignació de múltiples rols | — | ✅ |
+| 📋 Auditoria d'accions | — | ✅ |
+| ✔️ Validacions d'entrada | ✅ | ✅ |
+| ❗ Gestió d'errors HTTP | ✅ | ✅ |
+| 🔒 Seguretat (bcrypt, JWT, .env) | ✅ | ✅ |
+| 📤 Pujada d'imatges (local/cloud) | ✅ | ✅ |
+
+---
+
 ## Instal·lació
 
 1. Clona el repositori:
