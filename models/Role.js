@@ -12,19 +12,29 @@ const roleSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
-    // Array de referències a permisos
+    // Nivell jeràrquic: com més alt, més permisos
+    // SUPER_ADMIN=5, ADMIN=4, MANAGER=3, USER=2, VIEWER=1
+    level: {
+        type: Number,
+        default: 1
+    },
+    // Referència al rol pare — hereta els seus permisos
+    parentRole: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Role',
+        default: null
+    },
     permissions: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Permission'
     }],
-    // Els rols del sistema (admin, user) no es poden eliminar ni renombrar
     isSystemRole: {
         type: Boolean,
         default: false
     }
 }, { timestamps: true });
 
-// Mètode per afegir un permís al rol
+// Afegir permís al rol
 roleSchema.methods.addPermission = function(permissionId) {
     if (!this.permissions.includes(permissionId)) {
         this.permissions.push(permissionId);
@@ -32,7 +42,7 @@ roleSchema.methods.addPermission = function(permissionId) {
     return this.save();
 };
 
-// Mètode per eliminar un permís del rol
+// Eliminar permís del rol
 roleSchema.methods.removePermission = function(permissionId) {
     this.permissions = this.permissions.filter(
         p => p.toString() !== permissionId.toString()
@@ -40,8 +50,7 @@ roleSchema.methods.removePermission = function(permissionId) {
     return this.save();
 };
 
-// Mètode per verificar si el rol té un permís pel nom
-// Requereix que permissions estigui poblat (populate)
+// Verificar si el rol té un permís (requereix populate)
 roleSchema.methods.hasPermission = function(permissionName) {
     return this.permissions.some(p => p.name === permissionName);
 };

@@ -4,4 +4,12 @@ CLOUDINARY_CLOUD_NAME=El_Teu_Cloud_Name
 CLOUDINARY_API_KEY=La_Teva_API_KEY
 CLOUDINARY_API_SECRET=El_Teu_API_SECRET
 JWT_SECRET=El_teu_JWT_SECRET
+JWT_REFRESH_SECRET=una_altra_clau_secreta_diferent_per_refresh_tokens
 JWT_EXPIRES_IN=En_Quants_dies_expira
+
+# MailTrap Credentials
+MAILTRAP_HOST=sandbox.smtp.mailtrap.io
+MAILTRAP_PORT=2525
+MAILTRAP_USER=El_Teu_Id_Usuari
+MAILTRAP_PASS=La_Teva_Contrasenya_de_MailTrap
+EMAIL_FROM=noreply@taskmanager.com
