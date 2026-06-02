@@ -168,7 +168,7 @@ exports.assignRoleToUser = async (req, res) => {
     try {
         const { roleId } = req.body;
 
-        if (!isValidObjectId(req.params.roleId) || !isValidObjectId(req.params.userId)) {
+        if (!isValidObjectId(req.body.roleId) || !isValidObjectId(req.params.userId)) {
             return res.status(400).json({
                 success: false,
                 error: 'Format d\'ID invàlid'
@@ -256,7 +256,7 @@ exports.removeRoleFromUser = async (req, res) => {
 // GET /api/admin/users/:userId/permissions
 exports.getUserPermissions = async (req, res) => {
     try {
-        
+
         if (!isValidObjectId(req.params.userId)) {
             return res.status(400).json({
                 success: false,

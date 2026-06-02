@@ -221,7 +221,7 @@ exports.deleteRole = async (req, res) => {
 // POST /api/admin/roles/:id/permissions
 exports.addPermissionToRole = async (req, res) => {
     try {
-        if (!isValidObjectId(req.params.id) || !isValidObjectId(req.params.permissionId)) {
+        if (!isValidObjectId(req.params.id) || !isValidObjectId(req.body.permissionId)) {
             return res.status(400).json({
                 success: false,
                 error: 'Format d\'ID invàlid'
