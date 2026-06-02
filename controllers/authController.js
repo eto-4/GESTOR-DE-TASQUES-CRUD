@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Role = require('../models/Role');
 const generateToken = require('../utils/generateToken');
 const { handleValidationErrors } = require('../middleware/validators/authValidators');
+const Permission = require('../models/Permission');
 
 // POST /api/auth/register
 exports.register = async (req, res) => {
