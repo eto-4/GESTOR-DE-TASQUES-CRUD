@@ -22,11 +22,19 @@ const userSchema = new mongoose.Schema({
         minlength: [6, 'La contrasenya ha de tenir mínim 6 caràcters'],
         select: false
     },
-    // Array de referències a rols (un usuari pot tenir múltiples rols)
     roles: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Role'
-    }]
+    }],
+    // Camps nous T9
+    isActive: {
+        type: Boolean,
+        default: true
+    },
+    lastLogin: {
+        type: Date,
+        default: null
+    }
 }, { timestamps: true });
 
 // Hook pre-save: xifra la contrasenya només si ha estat modificada
@@ -55,7 +63,7 @@ userSchema.methods.toJSON = function() {
 
 // Afegeix un rol a l'usuari si no el té ja
 userSchema.methods.addRole = function(roleId) {
-    if (!this.roles.includes(roleId)) {
+    if (!this.roles.map(r => r.toString()).includes(roleId.toString())) {
         this.roles.push(roleId);
     }
     return this.save();
@@ -69,24 +77,31 @@ userSchema.methods.removeRole = function(roleId) {
     return this.save();
 };
 
-// Retorna tots els permisos efectius combinant tots els rols
-// Requereix que roles estigui poblat amb populate('roles')
-// i que els permisos de cada rol estiguin poblats amb populate('roles.permissions')
-userSchema.methods.getEffectivePermissions = function() {
+// Retorna permisos del rol + permisos delegats actius
+userSchema.methods.getEffectivePermissions = function(delegatedPermissions = []) {
     const permissions = new Set();
+
+    // Permisos dels rols
     this.roles.forEach(role => {
         if (role.permissions) {
             role.permissions.forEach(permission => {
-                permissions.add(permission.name);
+                if (permission.name) permissions.add(permission.name);
             });
         }
     });
+
+    // Permisos delegats temporalment
+    delegatedPermissions.forEach(dp => {
+        if (dp.permission && dp.permission.name) {
+            permissions.add(dp.permission.name);
+        }
+    });
+
     return Array.from(permissions);
 };
 
-// Verifica si l'usuari té un permís específic
-userSchema.methods.hasPermission = function(permissionName) {
-    return this.getEffectivePermissions().includes(permissionName);
+userSchema.methods.hasPermission = function(permissionName, delegatedPermissions = []) {
+    return this.getEffectivePermissions(delegatedPermissions).includes(permissionName);
 };
 
 module.exports = mongoose.model('User', userSchema);

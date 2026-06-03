@@ -1,5 +1,6 @@
 // middleware/checkPermission.js
 const AuditLog = require('../models/AuditLog');
+const { getActiveDelegations } = require('../services/delegationService');
 
 // Middleware que verifica si l'usuari té el permís necessari
 // S'usa SEMPRE després del middleware auth
@@ -23,8 +24,12 @@ const checkPermission = (requiredPermission) => {
                 });
             }
 
-            // Obtenir tots els permisos efectius de l'usuari
-            const userPermissions = user.getEffectivePermissions();
+            // Obtenir permisos delegats actius
+            const delegatedPermissions = await getActiveDelegations(user._id);
+
+            // Comprovar si té el permís (permisos efectius ja sigui rol o delegat)
+            const userPermissions = user.getEffectivePermissions(delegatedPermissions);
+
 
             if (!userPermissions.includes(requiredPermission)) {
                 // Registrar intent d'accés denegat a l'auditoria
