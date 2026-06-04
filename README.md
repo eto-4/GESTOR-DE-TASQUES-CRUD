@@ -406,3 +406,34 @@ GET /api/admin/audit-logs?userId=123&action=tasks:update&startDate=2025-01-01&en
 - Els rols i permisos del sistema no es poden eliminar
 - Totes les accions d'escriptura queden registrades a l'auditoria
 - Rate limiting per rol per prevenir atacs de força bruta
+
+---
+
+## 📬 Postman Collection
+
+Al repositori trobaràs el fitxer `postman-collection.json` amb totes les peticions de l'API llestes per importar.
+
+### Com importar-la
+1. Obre Postman
+2. Fes clic a **Import**
+3. Selecciona el fitxer `postman-collection.json`
+4. Un cop importada, configura les variables d'entorn:
+   - `accessToken` — token obtingut al fer login
+   - `refreshToken` — refresh token obtingut al fer login
+   - `userId`, `taskId`, `roleId`, `permissionId`, `delegationId` — IDs obtinguts de les respostes
+
+---
+
+## 📖 Documentació Swagger
+
+La documentació interactiva de l'API està disponible un cop el servidor està en funcionament:
+http://localhost:3000/api-docs
+
+Permet veure tots els endpoints, els paràmetres esperats i fer peticions directament des del navegador.
+
+### Regenerar la documentació
+Si afegeixes nous endpoints, regenera el fitxer Swagger amb:
+
+```bash
+npm run swagger
+```
