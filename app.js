@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const { roleLimiter } = require('./middleware/rateLimiter');
+const swaggerUi = require('swagger-ui-express');
+const swaggerFile = require('./swagger-output.json');
 
 const app = express();
 
@@ -18,6 +20,9 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // S'aplica després del middleware auth perquè necessita req.user
 app.use('/api/tasks',  roleLimiter);
 app.use('/api/admin',  roleLimiter);
+
+// Documentació Swagger — accessible a /api-docs
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 // Ruta de prova
 app.get('/', (req, res) => {
