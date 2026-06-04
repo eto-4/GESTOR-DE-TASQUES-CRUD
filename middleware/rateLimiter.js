@@ -7,9 +7,9 @@ const RATE_LIMITS = {
     super_admin: 1000,
     admin: 500,
     manager: 200,
-    user: 100,
-    viewer: 50,
-    default: 50 // per si no té rol reconegut
+    user: 2,
+    viewer: 2,
+    default: 2 // per si no té rol reconegut
 };
 
 // Middleware de rate limiting dinàmic per rol

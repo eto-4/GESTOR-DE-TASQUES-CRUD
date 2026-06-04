@@ -36,14 +36,14 @@ const auditRoutes       = require('./routes/auditRoutes');
 const delegationRoutes  = require('./routes/delegationRoutes');
 
 // Assignar rutes
-app.use('/api/users',             userRoutes);
-app.use('/api/auth',              authRoutes);
-app.use('/api/roles',             roleRoutes);
-app.use('/api/permissions', permissionRoutes);
-app.use('/api/tasks',             taskRoutes);
-app.use('/api/upload',            uploadRoutes);
+app.use('/api/users',             roleLimiter, userRoutes);
+app.use('/api/auth',              roleLimiter, authRoutes);
+app.use('/api/roles',             roleLimiter, roleRoutes);
+app.use('/api/permissions',       permissionRoutes);
+app.use('/api/tasks',             roleLimiter, taskRoutes);
+app.use('/api/upload',            roleLimiter, uploadRoutes);
 app.use('/api/admin',             adminRoutes);
-app.use('/api/admin/roles',       roleRoutes);
+app.use('/api/admin/roles',       roleLimiter, roleRoutes);
 app.use('/api/admin/permissions', permissionRoutes);
 app.use('/api/admin/audit-logs',  auditRoutes);
 app.use('/api/delegations',       delegationRoutes);
