@@ -11,6 +11,6 @@ router.get('/stats',          auth, checkPermission('audit:read'), auditControll
 router.get('/user/:userId',   auth, checkPermission('audit:read'), auditController.getUserAuditLogs);
 router.get('/:id',            auth, checkPermission('audit:read'), auditController.getAuditLogById);
 router.get('/',               auth, checkPermission('audit:read'), auditController.getAuditLogs);
-router.get('/export', auth, checkPermission('audit:read'), auditController.exportAuditLogs);
+router.get('/export',         auth, checkPermission('audit:read'), auditController.exportAuditLogs);
 
 module.exports = router;

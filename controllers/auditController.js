@@ -1,4 +1,5 @@
 // controllers/auditController.js
+const { isValidObjectId } = require('mongoose');
 const AuditLog = require('../models/AuditLog');
 
 // GET /api/admin/audit-logs
