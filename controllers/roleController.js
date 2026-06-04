@@ -16,6 +16,33 @@ exports.createRole = async (req, res) => {
     }
 
     try {
+
+        // Validar jerarquia: el rol pare ha de tenir un nivell inferior
+        if (req.body.parentRole) {
+            if (!isValidObjectId(req.body.parentRole)) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Format d\'ID de rol pare invàlid'
+                });
+            }
+        
+            const parentRole = await Role.findById(req.body.parentRole);
+            if (!parentRole) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Rol pare no trobat'
+                });
+            }
+        
+            // El nivell del rol nou ha de ser superior al del pare
+            if (req.body.level && req.body.level <= parentRole.level) {
+                return res.status(400).json({
+                    success: false,
+                    error: `Jerarquia invàlida. El rol pare té nivell ${parentRole.level}, el nou rol ha de tenir un nivell superior`
+                });
+            }
+        }
+        
         const { name, description, permissions } = req.body;
 
         // Comprovar que no existeix un rol amb aquest nom
