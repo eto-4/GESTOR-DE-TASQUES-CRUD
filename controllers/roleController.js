@@ -198,9 +198,15 @@ exports.deleteRole = async (req, res) => {
         // Reasignar usuaris que tinguin aquest rol al rol "user" per defecte
         const defaultRole = await Role.findOne({ name: 'user' });
         if (defaultRole) {
+            // Primer eliminar el rol
             await User.updateMany(
                 { roles: req.params.id },
-                { $pull: { roles: role._id }, $addToSet: { roles: defaultRole._id } }
+                { $pull: { roles: role._id } }
+            );
+            // Després afegir el rol per defecte
+            await User.updateMany(
+                { roles: { $ne: defaultRole._id } },
+                { $addToSet: { roles: defaultRole._id } }
             );
         }
 
