@@ -6,14 +6,24 @@ const Task = require('../models/Task');
 //    Només retorna les tasques de l'usuari autenticat
 // ---------------------------------
 exports.getTasks = (req, res) => {
-    // req.user._id el posa el middleware auth
-    Task.find({ user: req.user._id })
-        .then(tasks => {
-            res.status(200).json({
-                success: true,
-                count: tasks.length,
-                data: tasks
-            });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    Task.countDocuments({ user: req.user._id })
+        .then(total => {
+            return Task.find({ user: req.user._id })
+                .skip(skip)
+                .limit(limit)
+                .then(tasks => {
+                    res.status(200).json({
+                        success: true,
+                        count: total,
+                        page,
+                        totalPages: Math.ceil(total / limit),
+                        data: tasks
+                    });
+                });
         })
         .catch(err => {
             res.status(500).json({

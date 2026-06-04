@@ -295,3 +295,110 @@ exports.removePermissionFromRole = async (req, res) => {
         });
     }
 };
+
+// GET /api/admin/roles/:id/hierarchy
+// Retorna la cadena de rols pare fins arribar al rol arrel
+exports.getRoleHierarchy = async (req, res) => {
+    try {
+        const buildHierarchy = async (roleId) => {
+            const role = await Role.findById(roleId).populate('permissions');
+            if (!role) return null;
+
+            const node = {
+                id: role._id,
+                name: role.name,
+                level: role.level,
+                permissions: role.permissions.map(p => p.name)
+            };
+
+            if (role.parentRole) {
+                node.parent = await buildHierarchy(role.parentRole);
+            }
+
+            return node;
+        };
+
+        const hierarchy = await buildHierarchy(req.params.id);
+
+        if (!hierarchy) {
+            return res.status(404).json({
+                success: false,
+                error: 'Rol no trobat'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: hierarchy
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Error obtenint la jerarquia',
+            details: error.message
+        });
+    }
+};
+
+// GET /api/admin/roles/:id/permissions
+// Retorna els permisos propis + els heretats de tots els rols pare
+exports.getRolePermissions = async (req, res) => {
+    try {
+        const getAllPermissions = async (roleId, visited = new Set()) => {
+            if (visited.has(roleId.toString())) return [];
+            visited.add(roleId.toString());
+
+            const role = await Role.findById(roleId)
+                .populate('permissions');
+
+            if (!role) return [];
+
+            // Permisos propis del rol
+            let permissions = role.permissions.map(p => ({
+                name: p.name,
+                description: p.description,
+                category: p.category,
+                inheritedFrom: role.name
+            }));
+
+            // Permisos heretats del rol pare
+            if (role.parentRole) {
+                const parentPermissions = await getAllPermissions(role.parentRole, visited);
+                permissions = [...permissions, ...parentPermissions];
+            }
+
+            return permissions;
+        };
+
+        const role = await Role.findById(req.params.id);
+        if (!role) {
+            return res.status(404).json({
+                success: false,
+                error: 'Rol no trobat'
+            });
+        }
+
+        const permissions = await getAllPermissions(req.params.id);
+
+        // Eliminar duplicats mantenint el primer (el més específic)
+        const unique = permissions.filter((p, index, self) =>
+            index === self.findIndex(t => t.name === p.name)
+        );
+
+        res.status(200).json({
+            success: true,
+            data: {
+                role: role.name,
+                level: role.level,
+                totalPermissions: unique.length,
+                permissions: unique
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Error obtenint els permisos del rol',
+            details: error.message
+        });
+    }
+};

@@ -174,3 +174,41 @@ exports.getAuditStats = async (req, res) => {
         });
     }
 };
+
+// GET /api/admin/audit-logs/export
+exports.exportAuditLogs = async (req, res) => {
+    try {
+        const logs = await AuditLog.find()
+            .populate('userId', 'name email')
+            .sort({ timestamp: -1 })
+            .limit(1000);
+
+        // Generar CSV manualment
+        const headers = ['ID', 'Usuari', 'Email', 'Acció', 'Recurs', 'Estat', 'IP', 'Timestamp'];
+        const rows = logs.map(log => [
+            log._id,
+            log.userId?.name || '',
+            log.userId?.email || '',
+            log.action,
+            log.resource || '',
+            log.status,
+            log.ipAddress || '',
+            log.timestamp
+        ]);
+
+        const csv = [
+            headers.join(','),
+            ...rows.map(row => row.join(','))
+        ].join('\n');
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename=audit-logs.csv');
+        res.status(200).send(csv);
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Error exportant els logs',
+            details: error.message
+        });
+    }
+};
