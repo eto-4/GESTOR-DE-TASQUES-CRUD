@@ -9,6 +9,7 @@ const { createPermissionValidation, updatePermissionValidation } = require('../m
 router.post('/',      auth, checkPermission('permissions:manage'), ...createPermissionValidation, permissionController.createPermission);
 router.get('/',       auth, checkPermission('permissions:read'),                                  permissionController.getAllPermissions);
 router.get('/categories', auth, checkPermission('permissions:read'),                              permissionController.getPermissionsByCategory);
+router.get('/:id', auth, checkPermission('permissions:read'),                                     permissionController.getPermissionById);
 router.put('/:id',    auth, checkPermission('permissions:manage'), ...updatePermissionValidation, permissionController.updatePermission);
 router.delete('/:id', auth, checkPermission('permissions:manage'),                                permissionController.deletePermission);
 

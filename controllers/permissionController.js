@@ -59,6 +59,37 @@ exports.getAllPermissions = async (req, res) => {
     }
 };
 
+// GET /api/admin/permissions/:id
+exports.getPermissionById = async (req, res) => {
+    try {
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Format d\'ID invàlid'
+            });
+        }
+
+        const permission = await Permission.findById(req.params.id);
+        if (!permission) {
+            return res.status(404).json({
+                success: false,
+                error: 'Permís no trobat'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: permission
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Error obtenint el permís',
+            details: error.message
+        });
+    }
+};
+
 // GET /api/admin/permissions/categories
 // Retorna els permisos agrupats per categoria
 exports.getPermissionsByCategory = async (req, res) => {
