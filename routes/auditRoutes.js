@@ -9,8 +9,8 @@ const checkPermission = require('../middleware/checkPermission');
 // perquè Express interpreta "stats" com un :id si va després
 router.get('/stats',          auth, checkPermission('audit:read'), auditController.getAuditStats);
 router.get('/user/:userId',   auth, checkPermission('audit:read'), auditController.getUserAuditLogs);
+router.get('/export',         auth, checkPermission('audit:read'), auditController.exportAuditLogs);
 router.get('/:id',            auth, checkPermission('audit:read'), auditController.getAuditLogById);
 router.get('/',               auth, checkPermission('audit:read'), auditController.getAuditLogs);
-router.get('/export',         auth, checkPermission('audit:read'), auditController.exportAuditLogs);
 
 module.exports = router;
