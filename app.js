@@ -39,6 +39,7 @@ const delegationRoutes  = require('./routes/delegationRoutes');
 app.use('/api/users',             userRoutes);
 app.use('/api/auth',              authRoutes);
 app.use('/api/roles',             roleRoutes);
+app.use('/api/permissions', permissionRoutes);
 app.use('/api/tasks',             taskRoutes);
 app.use('/api/upload',            uploadRoutes);
 app.use('/api/admin',             adminRoutes);
