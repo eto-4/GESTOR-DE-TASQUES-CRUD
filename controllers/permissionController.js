@@ -1,4 +1,5 @@
 // controllers/permissionController.js
+const { isValidObjectId } = require('mongoose');
 const Permission = require('../models/Permission');
 const { validationResult } = require('express-validator');
 
