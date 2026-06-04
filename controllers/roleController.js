@@ -3,6 +3,7 @@ const Role = require('../models/Role');
 const Permission = require('../models/Permission');
 const User = require('../models/User');
 const { validationResult } = require('express-validator');
+const { isValidObjectId } = require('mongoose');
 
 // POST /api/admin/roles
 exports.createRole = async (req, res) => {

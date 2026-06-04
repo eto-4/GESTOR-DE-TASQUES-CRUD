@@ -34,7 +34,6 @@ const roleRoutes        = require('./routes/roleRoutes');
 const permissionRoutes  = require('./routes/permissionRoutes');
 const auditRoutes       = require('./routes/auditRoutes');
 const delegationRoutes  = require('./routes/delegationRoutes');
-const roleRoutes = require('./routes/roleRoutes');
 
 // Assignar rutes
 app.use('/api/users',             userRoutes);
